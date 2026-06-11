@@ -1,10 +1,12 @@
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
-import { validateSupabaseEnv } from './env';
+import env from './env';
 
-export const createClient = () => {
-  const { supabaseUrl, supabaseAnonKey } = validateSupabaseEnv();
+const createClient = () => {
+  const { supabaseUrl, supabaseAnonKey } = env();
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 };
+
+export default createClient;
