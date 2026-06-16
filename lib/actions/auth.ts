@@ -13,12 +13,12 @@ interface CreateProfileInput {
 
 const createUserProfile = async ({ id, email, name, imageUrl }: CreateProfileInput) => {
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { id },
+    const existingByEmail = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (existingUser) {
-      throw new Error('User already exists');
+    if (existingByEmail && existingByEmail.id !== id) {
+      throw new Error('This email is already registered. Please sign in instead.');
     }
 
     const user = await prisma.user.upsert({
@@ -30,6 +30,11 @@ const createUserProfile = async ({ id, email, name, imageUrl }: CreateProfileInp
     return user;
   } catch (error) {
     console.error(error);
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
     throw new Error('Failed to create user profile');
   }
 };
@@ -39,11 +44,15 @@ export default createUserProfile;
 export const signOut = async () => {
   try {
     const supabase = await createServerClient();
-    await supabase.auth.signOut();
-    redirect('/signIn');
-    return { success: true, message: 'Signed out successfully' };
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
   } catch (error) {
     console.error(error);
-    return { success: false, message: 'Failed to sign out' };
+    throw new Error('Failed to sign out');
   }
+
+  redirect('/signIn');
 };

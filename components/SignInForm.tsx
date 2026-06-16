@@ -9,14 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 
+const inputClassName =
+  'h-10 border-border-subtle bg-surface text-sm text-foreground placeholder:text-subtle focus-visible:border-sparkline/50 focus-visible:ring-sparkline/20';
+
 const SignInForm = () => {
   const router = useRouter();
   const supabase = createClient();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const inputClassName =
-    'h-10 border-border-subtle bg-surface text-sm text-muted placeholder:text-subtle focus-visible:border-sparkline/50 focus-visible:ring-sparkline/20';
 
   const handleSubmit = async (formData: FormData) => {
     setIsLoading(true);
@@ -42,15 +42,17 @@ const SignInForm = () => {
   };
 
   return (
-    <div className="grid-bg flex min-h-dvh items-center justify-center bg-surface p-6">
-      <div className="panel slide-up w-full max-w-md overflow-hidden">
+    <div className="flex min-h-dvh items-center justify-center bg-surface bg-[linear-gradient(var(--chart-grid)_1px,transparent_1px),linear-gradient(90deg,var(--chart-grid)_1px,transparent_1px)] bg-size-[24px_24px] p-6">
+      <div className="w-full max-w-md overflow-hidden rounded-lg border border-border-subtle bg-surface-raised shadow-lg shadow-black/55">
         <div className="flex flex-col items-center gap-2 border-b border-border-subtle px-6 py-8 text-center">
-          <span className="sidebar-brand-badge">Aktie Tracker</span>
-          <h1 className="text-2xl font-semibold tracking-tight text-muted">Welcome back</h1>
-          <p className="text-sm text-subtle">Sign in to access your watch list and portfolio.</p>
+          <span className="rounded-sm border border-sparkline/25 bg-sparkline/10 px-2 py-0.5 text-[0.625rem] font-medium uppercase tracking-widest text-sparkline">
+            Aktie Tracker
+          </span>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Welcome back</h1>
+          <p className="text-sm text-subtle">Sign in to access your watchlist and portfolio.</p>
         </div>
 
-        <form action={handleSubmit} className="panel-body flex flex-col gap-4">
+        <form action={handleSubmit} className="flex flex-col gap-4 p-4 px-[1.125rem]">
           {error && (
             <p className="rounded-md border border-loss/25 bg-loss-muted px-3 py-2 text-sm text-loss-foreground">
               {error}
