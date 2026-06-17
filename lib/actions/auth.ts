@@ -1,8 +1,14 @@
 'use server';
 
+import type { User } from '../../generated/prisma/client';
 import prisma from '../prisma';
 import createServerClient from '../server';
 import { redirect } from 'next/navigation';
+
+export interface ActionResult<T> {
+  data: T | null;
+  error: string | null;
+}
 
 interface CreateProfileInput {
   id: string;
@@ -11,14 +17,29 @@ interface CreateProfileInput {
   imageUrl?: string;
 }
 
-const createUserProfile = async ({ id, email, name, imageUrl }: CreateProfileInput) => {
+const createUserProfile = async ({
+  id,
+  email,
+  name,
+  imageUrl,
+}: CreateProfileInput): Promise<ActionResult<User>> => {
   try {
     const existingByEmail = await prisma.user.findUnique({
       where: { email },
+      include: { watchlists: true },
     });
 
     if (existingByEmail && existingByEmail.id !== id) {
-      throw new Error('This email is already registered. Please sign in instead.');
+      if (existingByEmail.watchlists.length > 0) {
+        return {
+          data: null,
+          error: 'This email is already registered. Please sign in instead.',
+        };
+      }
+
+      await prisma.user.delete({
+        where: { id: existingByEmail.id },
+      });
     }
 
     const user = await prisma.user.upsert({
@@ -27,31 +48,22 @@ const createUserProfile = async ({ id, email, name, imageUrl }: CreateProfileInp
       create: { id, email, name, imageUrl },
     });
 
-    return user;
+    return { data: user, error: null };
   } catch (error) {
     console.error(error);
-
-    if (error instanceof Error) {
-      throw error;
-    }
-
-    throw new Error('Failed to create user profile');
+    return { data: null, error: 'Failed to create user profile' };
   }
 };
 
 export default createUserProfile;
 
-export const signOut = async () => {
-  try {
-    const supabase = await createServerClient();
-    const { error } = await supabase.auth.signOut();
+export const signOut = async (): Promise<{ error: string | null }> => {
+  const supabase = await createServerClient();
+  const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      throw error;
-    }
-  } catch (error) {
+  if (error) {
     console.error(error);
-    throw new Error('Failed to sign out');
+    return { error: 'Failed to sign out' };
   }
 
   redirect('/signIn');

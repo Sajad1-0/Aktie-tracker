@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { signOut } from '../lib/actions/auth';
+import { SignOutButton } from '@/components/SignOutButton';
+
 export default function Home() {
   return (
     <div className="grid min-h-dvh grid-cols-1 bg-background md:grid-cols-[15rem_1fr]">
@@ -24,9 +24,7 @@ export default function Home() {
           </a>
         </nav>
         <div className="flex-1 overflow-y-auto px-6 py-5 pb-8">
-          <form action={signOut}>
-            <Button type="submit">Sign Out</Button>
-          </form>
+          <SignOutButton />
         </div>
       </aside>
 

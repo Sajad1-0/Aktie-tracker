@@ -13,16 +13,23 @@ import Link from 'next/link';
 const inputClassName =
   'h-10 border-border-subtle bg-surface text-sm text-foreground placeholder:text-subtle focus-visible:border-sparkline/50 focus-visible:ring-sparkline/20';
 
+interface FormMessage {
+  type: 'error' | 'success';
+  text: string;
+}
+
 const SignUpForm = () => {
   const router = useRouter();
   const supabase = createClient();
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<FormMessage | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsLoading(true);
-    setError(null);
+    setMessage(null);
 
+    const formData = new FormData(event.currentTarget);
     const email = String(formData.get('email'));
     const password = String(formData.get('password'));
     const name = String(formData.get('name'));
@@ -36,29 +43,44 @@ const SignUpForm = () => {
     });
 
     if (signupError) {
-      setError(signupError.message);
+      setMessage({ type: 'error', text: signupError.message });
+      setIsLoading(false);
+      return;
+    }
+
+    if (data.user?.identities?.length === 0) {
+      setMessage({
+        type: 'error',
+        text: 'This email is already registered. Please sign in instead.',
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (!data.session) {
+      setMessage({
+        type: 'success',
+        text: 'Check your email to confirm your account before signing in.',
+      });
       setIsLoading(false);
       return;
     }
 
     if (data.user) {
-      try {
-        await createUserProfile({
-          id: data.user.id,
-          email,
-          name: name || email,
-        });
-      } catch (profileError) {
-        setError(
-          profileError instanceof Error ? profileError.message : 'Failed to create user profile',
-        );
+      const { error: profileError } = await createUserProfile({
+        id: data.user.id,
+        email,
+        name: name || email,
+      });
+
+      if (profileError) {
+        setMessage({ type: 'error', text: profileError });
         setIsLoading(false);
         return;
       }
     }
 
-    router.push('/');
-    router.refresh();
+    router.replace('/');
     setIsLoading(false);
   };
 
@@ -75,10 +97,16 @@ const SignUpForm = () => {
           <p className="text-sm text-subtle">Start tracking stocks with your personal watchlist.</p>
         </div>
 
-        <form action={handleSubmit} className="flex flex-col gap-4 p-4 px-[1.125rem]">
-          {error && (
-            <p className="rounded-md border border-loss/25 bg-loss-muted px-3 py-2 text-sm text-loss-foreground">
-              {error}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4 px-[1.125rem]">
+          {message && (
+            <p
+              className={
+                message.type === 'error'
+                  ? 'rounded-md border border-loss/25 bg-loss-muted px-3 py-2 text-sm text-loss-foreground'
+                  : 'rounded-md border border-gain/25 bg-gain-muted px-3 py-2 text-sm text-gain-foreground'
+              }
+            >
+              {message.text}
             </p>
           )}
 
