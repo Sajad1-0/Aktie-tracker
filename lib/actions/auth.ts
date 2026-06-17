@@ -68,3 +68,18 @@ export const signOut = async (): Promise<{ error: string | null }> => {
 
   redirect('/signIn');
 };
+
+export const getAuthenticatedUser = async () => {
+  const supabase = await createServerClient();
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    redirect('/signIn');
+  }
+
+  return user;
+};

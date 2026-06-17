@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import updateSession from '@/lib/auth-middleware';
 
-const publicRoutes = ['/signIn', '/signUp', '/auth/callback'];
+const publicRoutes = ['/signIn', '/signUp', '/api/auth/callback'];
 
 export const middleware = async (request: NextRequest) => {
   const { supabaseResponse, user } = await updateSession(request);
