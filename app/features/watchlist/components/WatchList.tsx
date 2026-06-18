@@ -1,6 +1,8 @@
-import { SignOutButton } from '@/components/SignOutButton';
+import { SignOutButton } from '@/components/forms/SignOutButton';
 import { getAuthenticatedUser } from '@/lib/actions/auth';
-import { getUserWatchlist } from '../queries/getUserWatchlist';
+import getUserWatchlist from '../queries/getUserWatchlist';
+import AddSymbolForm from '@/components/forms/AddSymbolForm';
+import RemoveSymbolForm from '@/components/forms/RemoveSymbolForm';
 
 export const Watchlist = async () => {
   const user = await getAuthenticatedUser();
@@ -12,19 +14,27 @@ export const Watchlist = async () => {
   }
 
   return (
-    <div>
-      <h1>Watchlist</h1>
-      <p>{symbols.length} stocks tracked</p>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h1 className="text-2xl font-bold tracking-wide">Watchlist</h1>
+        <p className="text-sm text-subtle">{symbols.length} stocks tracked</p>
+      </div>
 
-      {symbols.length === 0 ? (
-        <p>No stocks yet. Add some to get started.</p>
-      ) : (
-        symbols.map((symbol) => (
-          <article key={symbol}>
-            <h2>{symbol}</h2>
+      <AddSymbolForm />
+
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(17.5rem,1fr))] gap-3.5">
+        {symbols.map((symbol) => (
+          <article
+            key={symbol}
+            className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface p-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="text-[0.9375rem] font-bold tracking-wide">{symbol}</h2>
+              <RemoveSymbolForm symbol={symbol} />
+            </div>
           </article>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 };

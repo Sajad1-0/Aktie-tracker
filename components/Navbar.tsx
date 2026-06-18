@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SignOutButton } from './SignOutButton';
+import { SignOutButton } from '@/components/forms/SignOutButton';
 
 const Navbar = () => {
   return (
