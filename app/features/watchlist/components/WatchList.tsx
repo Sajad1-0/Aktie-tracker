@@ -2,7 +2,6 @@ import { SignOutButton } from '@/components/forms/SignOutButton';
 import { getAuthenticatedUser } from '@/lib/actions/auth';
 import getUserWatchlist from '../queries/getUserWatchlist';
 import AddSymbolForm from '@/components/forms/AddSymbolForm';
-import RemoveSymbolForm from '@/components/forms/RemoveSymbolForm';
 import getQuotes from '@/lib/stocks/getQuotes';
 import StockCard from './StockCard';
 
