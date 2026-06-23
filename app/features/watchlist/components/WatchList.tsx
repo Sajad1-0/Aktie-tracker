@@ -3,15 +3,19 @@ import { getAuthenticatedUser } from '@/lib/actions/auth';
 import getUserWatchlist from '../queries/getUserWatchlist';
 import AddSymbolForm from '@/components/forms/AddSymbolForm';
 import RemoveSymbolForm from '@/components/forms/RemoveSymbolForm';
+import getQuotes from '@/lib/stocks/getQuotes';
+import StockCard from './StockCard';
 
 export const Watchlist = async () => {
   const user = await getAuthenticatedUser();
   const profile = await getUserWatchlist(user.id);
-  const symbols = profile?.watchlists.flatMap((watchlist) => watchlist.symbols) ?? [];
 
   if (!profile) {
     return <WatchlistProfileMissing />;
   }
+
+  const symbols = profile?.watchlists.flatMap((watchlist) => watchlist.symbols) ?? [];
+  const quotes = await getQuotes(symbols);
 
   return (
     <div className="space-y-6">
@@ -22,19 +26,18 @@ export const Watchlist = async () => {
 
       <AddSymbolForm />
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(17.5rem,1fr))] gap-3.5">
-        {symbols.map((symbol) => (
-          <article
-            key={symbol}
-            className="flex flex-col gap-3 rounded-lg border border-border-subtle bg-surface p-4"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <h2 className="text-[0.9375rem] font-bold tracking-wide">{symbol}</h2>
-              <RemoveSymbolForm symbol={symbol} />
-            </div>
-          </article>
-        ))}
-      </div>
+      {symbols.length === 0 ? (
+        <p className="rounded-lg border border-border-subtle bg-surface-raised p-4 text-sm text-subtle">
+          No stocks yet. Add your first symbol above - try <strong>AAPL</strong> or{' '}
+          <strong>VOLV-B</strong>
+        </p>
+      ) : (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(17.5rem,1fr))] gap-3.5">
+          {quotes.map((quote) => (
+            <StockCard key={quote.symbol} quote={quote} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
