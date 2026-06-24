@@ -7,17 +7,21 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import RemoveSymbolForm from '@/components/forms/RemoveSymbolForm';
 import { formatPrice, formatChangePercent, isPositiveChange } from '@/lib/stocks/format';
 import type { StockQuote } from '@/lib/stocks/types';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+import { StockSummary } from '@/generated/prisma/client';
+import { formatSummaryAge } from '@/lib/summaries/format';
+import { GenerateSummaryForm } from '@/components/forms/GenerateSummaryForm';
 
 interface StockCardProps {
   quote: StockQuote;
+  summary?: StockSummary | null;
 }
 
-const StockCard = ({ quote }: StockCardProps) => {
+const StockCard = ({ quote, summary }: StockCardProps) => {
   const isUp = isPositiveChange(quote.changePercent);
   const hasQuoteData = quote.price !== null && quote.changePercent !== null;
 
@@ -73,12 +77,21 @@ const StockCard = ({ quote }: StockCardProps) => {
 
       {/* AI summary placeholder */}
       <CardFooter className="flex-col items-start border-t border-border-subtle pt-3">
-        <div className="mb-1 text-sm font-semibold uppercase tracking-wider text-accent">
-          Summary . Coming Soon...
-        </div>
-        <p className="line-clamp-2 text-xs leading-normal text-muted-foreground">
-          AI summary will appear here in a later update.
-        </p>
+        {summary ? (
+          <>
+            <div className="text-sm font-semibold tracking-wider text-accent">
+              AI . {formatSummaryAge(summary.createdAt)}
+            </div>
+            <p className="line-clamp-3 text-xs leading-normal text-muted-foreground">
+              {summary.summary}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-subtle">No Summary for today yet.</p>
+            <GenerateSummaryForm symbol={quote.symbol} />
+          </>
+        )}
       </CardFooter>
     </Card>
   );

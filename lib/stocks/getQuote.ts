@@ -60,14 +60,7 @@ const getQuote = async (symbol: string): Promise<StockQuote> => {
     };
   } catch (error) {
     console.error(`Error fetching quote for ${symbol}:`, error);
-    return {
-      symbol,
-      apiSymbol,
-      name: null,
-      price: null,
-      changePercent: null,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+    throw error;
   }
 };
 

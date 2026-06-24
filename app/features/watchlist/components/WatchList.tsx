@@ -4,6 +4,7 @@ import getUserWatchlist from '../queries/getUserWatchlist';
 import AddSymbolForm from '@/components/forms/AddSymbolForm';
 import getQuotes from '@/lib/stocks/getQuotes';
 import StockCard from './StockCard';
+import { findSummaryForSymbol } from '@/lib/summaries/findSummaryForSymbol';
 
 export const Watchlist = async () => {
   const user = await getAuthenticatedUser();
@@ -15,6 +16,7 @@ export const Watchlist = async () => {
 
   const symbols = profile?.watchlists.flatMap((watchlist) => watchlist.symbols) ?? [];
   const quotes = await getQuotes(symbols);
+  const watchlists = profile?.watchlists;
 
   return (
     <div className="space-y-6">
@@ -33,7 +35,11 @@ export const Watchlist = async () => {
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(17.5rem,1fr))] gap-3.5">
           {quotes.map((quote) => (
-            <StockCard key={quote.symbol} quote={quote} />
+            <StockCard
+              key={quote.symbol}
+              quote={quote}
+              summary={findSummaryForSymbol(watchlists, quote.symbol)}
+            />
           ))}
         </div>
       )}
