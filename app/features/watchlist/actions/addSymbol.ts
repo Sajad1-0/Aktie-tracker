@@ -3,15 +3,28 @@
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getAuthenticatedUser } from '@/lib/actions/auth';
+import { validateSymbol } from '@/lib/stocks/validateSymbol';
+import getQuote from '@/lib/stocks/getQuote';
 
 const addSymbol = async (formData: FormData) => {
   const user = await getAuthenticatedUser();
   const rawSymbol = String(formData.get('symbol') ?? '');
-  const symbol = rawSymbol.trim().toUpperCase();
+  const validation = validateSymbol(rawSymbol);
 
-  if (!symbol) return { error: 'Symbol is required' };
+  if (!validation.success) return { error: validation.error, success: null };
+
+  const { symbol } = validation;
 
   try {
+    // validate symbol exists in Finnhub
+    const quote = await getQuote(symbol);
+    if (quote.price === null) {
+      return {
+        error: quote.error ?? `Symbol ${symbol} not found in market`,
+        success: null,
+      };
+    }
+
     const existingWatchList = await prisma.watchList.findFirst({
       where: { userId: user.id },
     });

@@ -1,11 +1,19 @@
-export const formatPrice = (price: number | null, currency: 'USD'): string => {
+import { type QuoteCurrency, getQuoteCurrency } from './currency';
+
+export const formatPrice = (price: number | null, currency: QuoteCurrency): string => {
   if (price === null) return '-';
 
-  return new Intl.NumberFormat('en-US', {
+  const locale = currency === 'SEK' ? 'sv-SE' : 'en-US';
+
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     maximumFractionDigits: 2,
   }).format(price);
+};
+
+export const formatPriceForSymbol = (price: number | null, symbol: string): string => {
+  return formatPrice(price, getQuoteCurrency(symbol));
 };
 
 export const formatChangePercent = (changePercent: number | null): string => {
